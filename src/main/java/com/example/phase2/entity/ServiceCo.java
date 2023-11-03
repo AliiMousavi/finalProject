@@ -2,10 +2,9 @@ package com.example.phase2.entity;
 
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -13,16 +12,27 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
+@Getter
+@Setter
+@Builder
 @Table(name = "services")
 public class ServiceCo {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    protected Long id;
-    String name;
-    @OneToMany(mappedBy = "service")
-    List<SubService> subServices;
+    private Long id;
+    @Column(unique = true)
+    private String name;
+    @OneToMany(mappedBy = "serviceCo", cascade = {CascadeType.PERSIST,CascadeType.MERGE})
+    private List<SubService> subServices= new ArrayList<>();
 
-    public ServiceCo(String name) {
-        this.name = name;
+    @Override
+    public String toString() {
+        return "ServiceCo{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", subServices=" + subServices.stream()
+                .map(SubService::getId)
+                .toList() +
+                '}';
     }
 }
