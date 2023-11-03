@@ -1,5 +1,7 @@
 package com.example.phase2.validator;
 
+import com.example.phase2.exception.NotValidImageException;
+
 import java.io.File;
 
 public class ImageValidator {
@@ -7,14 +9,12 @@ public class ImageValidator {
         String fileName = file.getName();
         String fileExtension = fileName.substring(fileName.lastIndexOf(".") + 1);
         if (!fileExtension.equalsIgnoreCase("jpg")) {
-            System.out.println("File format must be JPG.");
-            return false;
+            throw new NotValidImageException("File format must be JPG.");
         }
         long fileSize = file.length();
         long maxSize = 300 * 1024;
         if (fileSize > maxSize) {
-            System.out.println("File size exceeds 300 KB.");
-            return false;
+            throw new NotValidImageException("File size exceeds 300 KB.");
         }
         return true;
     }
