@@ -115,7 +115,7 @@ class OfferServiceImplTest {
         List<Offer> offers = createOffers();
 
         List<Offer> expectedSortedOffers = new ArrayList<>(offers);
-        expectedSortedOffers.sort(Comparator.comparingInt(offer -> offer.getExpert().getScore()));
+        expectedSortedOffers.sort(Comparator.comparingDouble(offer -> offer.getExpert().getScore()));
 
         List<Offer> result = offerService.sortOffersByExpertScore(offers);
 
