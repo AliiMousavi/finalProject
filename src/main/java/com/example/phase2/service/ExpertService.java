@@ -1,8 +1,7 @@
 package com.example.phase2.service;
 
 
-import com.example.phase2.entity.Customer;
-import com.example.phase2.entity.Expert;
+import com.example.phase2.entity.*;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,4 +15,7 @@ public interface ExpertService {
     List<Expert> saveAll(List<Expert> experts);
     void deleteById(Long id);
     Expert ChangePasswordByID(String password, Long id);
+    List<Order> getOrdersForOffering(Expert expert);
+    Offer offering(Offer offer);
+    List<Integer> getScoreOfComments(Long ExpertId);
 }
