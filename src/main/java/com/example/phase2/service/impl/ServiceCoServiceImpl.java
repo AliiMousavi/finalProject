@@ -5,6 +5,7 @@ import com.example.phase2.entity.ServiceCo;
 import com.example.phase2.repository.ServiceCoRepository;
 import com.example.phase2.service.ServiceCoService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -17,26 +18,31 @@ public class ServiceCoServiceImpl implements ServiceCoService {
     }
 
     @Override
+    @Transactional
     public ServiceCo saveOrUpdate(ServiceCo service) {
         return serviceCoRepository.save(service);
     }
 
     @Override
+    @Transactional
     public Optional<ServiceCo> findById(Long id) {
         return serviceCoRepository.findById(id);
     }
 
     @Override
+    @Transactional
     public List<ServiceCo> findAll() {
         return serviceCoRepository.findAll();
     }
 
     @Override
+    @Transactional
     public List<ServiceCo> saveAll(List<ServiceCo> serviceCos) {
         return serviceCoRepository.saveAll(serviceCos);
     }
 
     @Override
+    @Transactional
     public void deleteById(Long id) {
         serviceCoRepository.deleteById(id);
     }
