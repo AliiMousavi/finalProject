@@ -1,7 +1,9 @@
 package com.example.phase2.service;
 
 
+import com.example.phase2.entity.Comment;
 import com.example.phase2.entity.Customer;
+import com.example.phase2.entity.Offer;
 import com.example.phase2.entity.Order;
 import org.springframework.stereotype.Service;
 
@@ -15,4 +17,13 @@ public interface CustomerService {
     void deleteById(Long id);
     Customer ChangePasswordByID(String password,Long id);
     Order Ordering(Order order);
+    List<Offer> getOffersSortedByOfferedPrice(Order order);
+    List<Offer> getOffersSortedByExpertScore(Order order);
+    void selectOfferForOrder(Order order, Offer offer);
+    void changeOrderStatusToBeginning(Long customerId, Long orderId);
+    void changeOrderStatusToDone(Long customerId, Long orderId);
+    void changeOrderStatusToPAID(Long customerId, Long orderId);
+    void paymentFromCredit(Long customerId, Long orderId);
+    void paymentByBankCard(Long customerId, Long orderId);
+    void AddComment(Long customerId, Long orderId, Comment comment);
 }
