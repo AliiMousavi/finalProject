@@ -1,10 +1,10 @@
 package com.example.phase2.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import lombok.experimental.SuperBuilder;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -13,43 +13,39 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
+@Getter
+@Setter
+@Builder
 @Table(name = "sub_services")
 public class SubService {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    protected Long id;
-    String name;
+    private Long id;
+    @Column(unique = true)
+    private String name;
+    private int basePrice;
+    private String caption;
     @ManyToOne
-    ServiceCo service;
-    int basePrice;
-    String caption;
+    private ServiceCo serviceCo;
     @ManyToMany
-    List<Expert> Experts;
-    @OneToOne(mappedBy = "subServiceCollection")
-    Order order;
-
-    public SubService(String name, int basePrice, String caption) {
-        this.name = name;
-        this.basePrice = basePrice;
-        this.caption = caption;
-    }
+    private List<Expert> experts= new ArrayList<>();
+    @OneToMany(mappedBy = "subService", cascade = {CascadeType.PERSIST,CascadeType.MERGE})
+    private List<Order> orders= new ArrayList<>();
 
     @Override
     public String toString() {
-        return "SubServiceCollection{" +
-                "name='" + name + '\'' +
-                ", service=" + service.getName() +
+        return "SubService{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
                 ", basePrice=" + basePrice +
                 ", caption='" + caption + '\'' +
-                ", Experts=" + Experts +
-                ", order=" + order +
+                ", serviceCo=" + serviceCo.getName() +
+                ", experts=" + experts.stream()
+                .map(Expert::getFirstName)
+                .toList() +
+                ", orders=" + orders.stream()
+                .map(Order::getId)
+                .toList() +
                 '}';
-    }
-
-    public SubService(String name, ServiceCo service, int basePrice, String caption) {
-        this.name = name;
-        this.service = service;
-        this.basePrice = basePrice;
-        this.caption = caption;
     }
 }
