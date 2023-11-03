@@ -1,11 +1,13 @@
 package com.example.phase2.controller;
 
 import com.example.phase2.dto.*;
+import com.example.phase2.entity.Comment;
 import com.example.phase2.entity.Customer;
 import com.example.phase2.entity.Offer;
 import com.example.phase2.entity.Order;
 import com.example.phase2.exception.InsufficientCreditException;
 import com.example.phase2.exception.NotValidPasswordException;
+import com.example.phase2.mapper.CommentMapper;
 import com.example.phase2.mapper.CustomerMapper;
 import com.example.phase2.mapper.OfferMapper;
 import com.example.phase2.mapper.OrderMapper;
@@ -186,20 +188,37 @@ public class CustomerController {
         }
     }
 
-//    @PostMapping("/paymentPage")
-//    public void processPaymentPage(@RequestBody @Valid BankCardRequestDto bankCardRequestDto) {
-////        customerService.paymentByBankCard();
-////        System.out.println(bankCardRequestDto);
-////        System.out.println(bankCardRequestDto);
-////        System.out.println(bankCardRequestDto);
-////        System.out.println(bankCardRequestDto);
-////        System.out.println(bankCardRequestDto);
-////        System.out.println(bankCardRequestDto);
-////        System.out.println(bankCardRequestDto);
-//    }
-//
-//    @PostMapping("/oldPaymentPage")
-//    public void processPaymentPageHtmlAfshar(@RequestBody @Valid BankCardRequestDto bankCardRequestDto) {
+    @PostMapping("/addComment/{customerId}/{orderId}")
+    public ResponseEntity<CommentResponseDto> addComment(@PathVariable Long customerId, @PathVariable Long orderId, @RequestBody CommentRequestDto commentRequestDto) {
+        Comment comment = CommentMapper.INSTANCE.dtoToComment(commentRequestDto);
+        try {
+            customerService.AddComment(customerId, orderId, comment);
+            CommentResponseDto commentResponseDto = CommentMapper.INSTANCE.commentToDto(comment);
+            return ResponseEntity.ok(commentResponseDto);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @PostMapping("/addComment/{customerId}/{orderId}")
+    public ResponseEntity<CommentResponseDto> addCommentJustScore(@PathVariable Long customerId, @PathVariable Long orderId, @RequestBody CommentRequestDtoWithoutComment commentRequestDto) {
+        Comment comment = CommentMapper.INSTANCE.justScoredtoToComment(commentRequestDto);
+        try {
+            customerService.AddComment(customerId, orderId, comment);
+            CommentResponseDto commentResponseDto = CommentMapper.INSTANCE.commentToDto(comment);
+            return ResponseEntity.ok(commentResponseDto);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @PostMapping("/paymentPage")
+    public void processPaymentPage(@RequestBody @Valid BankCardRequestDto bankCardRequestDto) {
+//        customerService.paymentByBankCard();
 //        System.out.println(bankCardRequestDto);
 //        System.out.println(bankCardRequestDto);
 //        System.out.println(bankCardRequestDto);
@@ -207,6 +226,17 @@ public class CustomerController {
 //        System.out.println(bankCardRequestDto);
 //        System.out.println(bankCardRequestDto);
 //        System.out.println(bankCardRequestDto);
-//    }
+    }
+
+    @PostMapping("/oldPaymentPage")
+    public void processPaymentPageHtmlAfshar(@RequestBody @Valid BankCardRequestDto bankCardRequestDto) {
+        System.out.println(bankCardRequestDto);
+        System.out.println(bankCardRequestDto);
+        System.out.println(bankCardRequestDto);
+        System.out.println(bankCardRequestDto);
+        System.out.println(bankCardRequestDto);
+        System.out.println(bankCardRequestDto);
+        System.out.println(bankCardRequestDto);
+    }
 
 }
