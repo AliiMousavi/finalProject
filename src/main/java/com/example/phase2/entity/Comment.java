@@ -14,10 +14,19 @@ import lombok.NoArgsConstructor;
 public class Comment {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    protected Long id;
-    int score;
-    String Comment;
+    private Long id;
+    private int score;
+    private String Comment;
     @ManyToOne
-    Expert expert;
+    private Expert expert;
 
+    @Override
+    public String toString() {
+        return "Comment{" +
+                "id=" + id +
+                ", score=" + score +
+                ", Comment='" + Comment + '\'' +
+                ", expert=" + expert.getFirstName() +
+                '}';
+    }
 }
