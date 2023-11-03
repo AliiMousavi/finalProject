@@ -3,42 +3,56 @@ package com.example.phase2.entity;
 
 
 import com.example.phase2.entity.enumeration.ExpertStatus;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Entity;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-@Setter
 @Getter
+@Setter
+@SuperBuilder
 public class Expert extends User {
-    ExpertStatus expertStatus;
+    private ExpertStatus expertStatus;
+    private double credit;
+    private double Score;
 
-    @ManyToMany(mappedBy = "Experts" , cascade = CascadeType.PERSIST)
-    List<SubService> subServiceCollections;
+    @ManyToMany(mappedBy = "experts", cascade = {CascadeType.PERSIST,CascadeType.MERGE})
+    private List<SubService> subServices= new ArrayList<>();
 
-    @OneToMany(mappedBy = "expert")
-    List<Comment> comments;
+    @OneToMany(mappedBy = "expert", cascade = {CascadeType.PERSIST,CascadeType.MERGE})
+    private List<Comment> comments= new ArrayList<>();
 
-//    public Expert(String firstName, String lastName, String email) {
-//        super(firstName, lastName, email);
-//        this.expertStatus = ExpertStatus.NEW;
-//    }
-//
-//    public Expert(String firstName, String lastName, String email, byte[] image) throws IOException {
-//        super(firstName, lastName, email, image);
-//    }
+    @OneToMany(mappedBy = "expert" , cascade = {CascadeType.PERSIST,CascadeType.MERGE})
+    private List<Offer> offers= new ArrayList<>();
+
+    @OneToMany(mappedBy = "expert", cascade = {CascadeType.PERSIST,CascadeType.MERGE})
+    private List<Order> orders = new ArrayList<>();
 
     @Override
     public String toString() {
-        return id + "." +
-                firstName + " " + lastName + "\t" +expertStatus +
+        return "Expert{" +
+                "expertStatus=" + expertStatus +
+                ", credit=" + credit +
+                ", Score=" + Score +
+                ", subServices=" + subServices.stream()
+                .map(SubService::getName)
+                .toList() +
+                ", comments=" + comments.stream()
+                .map(Comment::getId)
+                .toList() +
+                ", offers=" + offers.stream()
+                .map(Offer::getId)
+                .toList() +
+                ", orders=" + orders.stream()
+                .map(Order::getId)
+                .toList() +
                 '}';
     }
 }
