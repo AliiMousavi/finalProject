@@ -72,12 +72,35 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(e.getMessage());
     }
 
+    @ExceptionHandler(NotMachCaptchaException.class)
+    public ResponseEntity<String> NotMachCaptchaExceptionHandler(NotMachCaptchaException e) {
+        log.error(e.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(e.getMessage());
+    }
+
     @ExceptionHandler(NoSuchElementException.class)
     public ResponseEntity<String> noSuchElementExceptionHandler(NoSuchElementException e) {
         log.error(e.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(e.getMessage());
     }
 
+    @ExceptionHandler(NotValidOfferPriceException.class)
+    public ResponseEntity<String> notValidOfferPriceExceptionHandler(NotValidOfferPriceException e) {
+        log.error(e.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(e.getMessage());
+    }
+
+    @ExceptionHandler(NotFinishedWorkException.class)
+    public ResponseEntity<String> notFinishedWorkExceptionHandler(NotFinishedWorkException e) {
+        log.error(e.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(e.getMessage());
+    }
+
+    @ExceptionHandler(ActivationTokenExpiredException.class)
+    public ResponseEntity<String> activationTokenExpiredExceptionHandler(ActivationTokenExpiredException e) {
+        log.error(e.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(e.getMessage());
+    }
 
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
