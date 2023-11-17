@@ -25,6 +25,16 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
+    public Order update(Order order) {
+        try{
+            return orderRepository.save(order);
+        }catch (Exception e) {
+            throw new RuntimeException(e.getMessage());
+        }
+    }
+
+    @Override
+    @Transactional
     public Optional<Order> findById(Long id) {
         return orderRepository.findById(id);
     }
@@ -45,5 +55,18 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public void deleteById(Long id) {
         orderRepository.deleteById(id);
+    }
+
+    @Override
+    @Transactional
+    public Optional<Order> findOrderByAcceptedOffer_OfferedPrice(int offeredPrice) {
+        return orderRepository.findOrderByAcceptedOffer_OfferedPrice(offeredPrice);
+    }
+
+    @Override
+    @Transactional
+    public int getPaymentAmountFromOrderID(Long orderId) {
+        Order order = orderRepository.findById(orderId).orElseThrow();
+        return order.getAcceptedOffer().getOfferedPrice();
     }
 }
