@@ -15,13 +15,11 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class OfferResponseDto {
-    @NotBlank
+    @NotNull
     private Long id;
     @NotBlank
-    private LocalDateTime DateOfOfferRegister;
-    @NotBlank
     private int offeredPrice;
-    @NotBlank
+
     private LocalDateTime offeredDate;
     @NotNull
     private int Duration;
