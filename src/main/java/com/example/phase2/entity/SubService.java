@@ -10,11 +10,10 @@ import java.util.List;
 
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-@AllArgsConstructor
-@NoArgsConstructor
-@Data
 @Getter
 @Setter
+@AllArgsConstructor
+@NoArgsConstructor
 @Builder
 @Table(name = "sub_services")
 public class SubService {
