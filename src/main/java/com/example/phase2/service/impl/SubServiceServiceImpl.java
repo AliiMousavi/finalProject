@@ -24,6 +24,16 @@ public class SubServiceServiceImpl implements SubServiceService {
 
     @Override
     @Transactional
+    public SubService update(SubService subService) {
+        try{
+            return subServiceRepository.save(subService);
+        }catch (Exception e) {
+            throw new RuntimeException(e.getMessage());
+        }
+    }
+
+    @Override
+    @Transactional
     public Optional<SubService> findById(Long id) {
         return subServiceRepository.findById(id);
     }
