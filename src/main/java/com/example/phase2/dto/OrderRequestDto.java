@@ -1,12 +1,14 @@
 package com.example.phase2.dto;
 
+
+import com.example.phase2.entity.SubService;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.sql.Date;
 import java.time.LocalDateTime;
 
 @Getter
@@ -14,12 +16,14 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class OrderRequestDto {
-    @NotBlank
+    @NotNull
     private int offerPrice;
     @NotBlank
     private String workToDo;
-    @NotBlank
-    private LocalDateTime DateOfExecution;
+
+    private LocalDateTime dateOfExecution;
     @NotBlank
     private String address;
+
+    private Long subServiceId;
 }
