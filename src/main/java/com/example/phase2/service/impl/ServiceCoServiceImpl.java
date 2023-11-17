@@ -25,6 +25,16 @@ public class ServiceCoServiceImpl implements ServiceCoService {
 
     @Override
     @Transactional
+    public ServiceCo update(ServiceCo service) {
+        try{
+            return serviceCoRepository.save(service);
+        }catch (Exception e) {
+            throw new RuntimeException(e.getMessage());
+        }
+    }
+
+    @Override
+    @Transactional
     public Optional<ServiceCo> findById(Long id) {
         return serviceCoRepository.findById(id);
     }
