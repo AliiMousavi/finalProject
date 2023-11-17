@@ -13,6 +13,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,6 +26,7 @@ public class ServiceCoController {
     private final ServiceCoServiceImpl serviceCoService;
 
     @PostMapping("/save")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ServiceCoResponseDto> save(@RequestBody @Valid ServiceCoRequestDto serviceCoRequestDto){
         ServiceCo serviceCo = ServiceCoMapper.INSTANCE.dtoToServiceCo(serviceCoRequestDto);
         ServiceCo savedServiceCo = serviceCoService.saveOrUpdate(serviceCo);
@@ -33,6 +35,7 @@ public class ServiceCoController {
     }
 
     @GetMapping("/find-by-id/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ServiceCoResponseDto> findById(@PathVariable Long id){
         ServiceCo serviceCo = serviceCoService.findById(id).orElseThrow();
         ServiceCoResponseDto serviceCoResponseDto = ServiceCoMapper.INSTANCE.serviceCoToDto(serviceCo);
@@ -40,6 +43,7 @@ public class ServiceCoController {
     }
 
     @GetMapping("/find-all")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<ServiceCoResponseDto>> findAll() {
         List<ServiceCo> serviceCos = serviceCoService.findAll();
         List<ServiceCoResponseDto> serviceCoResponseDtos = serviceCos.stream()
@@ -49,17 +53,19 @@ public class ServiceCoController {
     }
 
     @PutMapping("/update/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ServiceCoResponseDto> updateServiceCo(@PathVariable Long id,
                                                         @RequestBody @Valid ServiceCoRequestDto serviceCoRequestDto) {
         ServiceCo serviceCo = serviceCoService.findById(id).orElseThrow();
         ServiceCo updatedServiceCo = ServiceCoMapper.INSTANCE.dtoToServiceCo(serviceCoRequestDto);
         updatedServiceCo.setId(serviceCo.getId());
-        ServiceCo savedServiceCo = serviceCoService.saveOrUpdate(updatedServiceCo);
+        ServiceCo savedServiceCo = serviceCoService.update(updatedServiceCo);
         ServiceCoResponseDto serviceCoResponseDto = ServiceCoMapper.INSTANCE.serviceCoToDto(savedServiceCo);
         return ResponseEntity.ok(serviceCoResponseDto);
     }
 
     @DeleteMapping("/delete/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Long> deleteServiceCo(@PathVariable Long id) {
         serviceCoService.deleteById(id);
         return ResponseEntity.ok(id);
