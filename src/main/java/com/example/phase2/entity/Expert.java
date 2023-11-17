@@ -9,22 +9,24 @@ import lombok.experimental.SuperBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Entity
-@AllArgsConstructor
-@NoArgsConstructor
-@Data
 @Getter
 @Setter
+@AllArgsConstructor
+@NoArgsConstructor
 @SuperBuilder
 public class Expert extends User {
     private ExpertStatus expertStatus;
     private double credit;
-    private double Score;
+    private double score;
 
     @ManyToMany(mappedBy = "experts", cascade = {CascadeType.PERSIST,CascadeType.MERGE})
-    private List<SubService> subServices= new ArrayList<>();
+    private List<SubService> subServices;
+
+    public List<SubService> getSubServices() {
+        return this.subServices = new ArrayList<>();
+    }
 
     @OneToMany(mappedBy = "expert", cascade = {CascadeType.PERSIST,CascadeType.MERGE})
     private List<Comment> comments= new ArrayList<>();
@@ -40,7 +42,7 @@ public class Expert extends User {
         return "Expert{" +
                 "expertStatus=" + expertStatus +
                 ", credit=" + credit +
-                ", Score=" + Score +
+                ", Score=" + score +
                 ", subServices=" + subServices.stream()
                 .map(SubService::getName)
                 .toList() +
