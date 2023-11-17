@@ -13,6 +13,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,6 +27,7 @@ public class SubServiceController {
     private final SubServiceServiceImpl subServiceService;
 
     @PostMapping("/save")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<SubServiceResponseDto> save(@RequestBody @Valid SubServiceRequestDto subServiceRequestDto){
         SubService subService = SubServiceMapper.INSTANCE.dtoToSubService(subServiceRequestDto);
         SubService savedSubService = subServiceService.saveOrUpdate(subService);
@@ -34,6 +36,7 @@ public class SubServiceController {
     }
 
     @GetMapping("/find-by-id/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<SubServiceResponseDto> findById(@PathVariable Long id){
         SubService subService = subServiceService.findById(id).orElseThrow();
         SubServiceResponseDto subServiceResponseDto = SubServiceMapper.INSTANCE.subServiceToDto(subService);
@@ -41,6 +44,7 @@ public class SubServiceController {
     }
 
     @GetMapping("/find-all")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<SubServiceResponseDto>> findAll() {
         List<SubService> subServices = subServiceService.findAll();
         List<SubServiceResponseDto> subServiceResponseDtos = subServices.stream()
@@ -50,6 +54,7 @@ public class SubServiceController {
     }
 
     @PutMapping("/update/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<SubServiceResponseDto> updateSubService(@PathVariable Long id,
                                                                 @RequestBody @Valid SubServiceRequestDto subServiceRequestDto) {
         SubService subService = subServiceService.findById(id).orElseThrow();
@@ -61,12 +66,14 @@ public class SubServiceController {
     }
 
     @DeleteMapping("/delete/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Long> deleteSubService(@PathVariable Long id) {
         subServiceService.deleteById(id);
         return ResponseEntity.ok(id);
     }
 
     @PutMapping("/updateSubServiceBasePrice/{subServiceId}/{newBasePrice}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<SubServiceResponseDto> updateSubServiceBasePrice(@PathVariable Long subServiceId, @PathVariable int newBasePrice) {
         try {
             SubService updatedSubService = subServiceService.updateBasePrice(subServiceId, newBasePrice);
@@ -78,6 +85,7 @@ public class SubServiceController {
     }
 
     @PutMapping("/updateSubServiceCaption/{subServiceId}/{newCaption}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<SubServiceResponseDto> updateSubServiceCaption(@PathVariable Long subServiceId, @PathVariable String newCaption) {
         try {
             SubService updatedSubService = subServiceService.updateCaption(subServiceId, newCaption);
