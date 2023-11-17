@@ -1,18 +1,16 @@
 package com.example.phase2.controller;
 
-import com.example.phase2.dto.ExpertRequestDto;
-import com.example.phase2.dto.ExpertResponseDto;
 import com.example.phase2.dto.OrderRequestDto;
 import com.example.phase2.dto.OrderResponseDto;
-import com.example.phase2.entity.Expert;
+import com.example.phase2.dto.PaymentAmount;
 import com.example.phase2.entity.Order;
-import com.example.phase2.mapper.ExpertMapper;
 import com.example.phase2.mapper.OrderMapper;
 import com.example.phase2.service.impl.OrderServiceImpl;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,6 +24,7 @@ public class OrderController {
     private final OrderServiceImpl orderService;
 
     @PostMapping("/save")
+    @PreAuthorize("hasAnyRole('ADMIN','CUSTOMER')")
     public ResponseEntity<OrderResponseDto> save(@RequestBody @Valid OrderRequestDto orderRequestDto){
         Order order = OrderMapper.INSTANCE.dtoToOrder(orderRequestDto);
         Order savedOrder = orderService.saveOrUpdate(order);
@@ -34,6 +33,7 @@ public class OrderController {
     }
 
     @GetMapping("/find-by-id/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<OrderResponseDto> findById(@PathVariable Long id){
         Order order = orderService.findById(id).orElseThrow();
         OrderResponseDto orderResponseDto = OrderMapper.INSTANCE.orderToDto(order);
@@ -41,6 +41,7 @@ public class OrderController {
     }
 
     @GetMapping("/find-all")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<OrderResponseDto>> findAll() {
         List<Order> orders = orderService.findAll();
         List<OrderResponseDto> orderResponseDtos = orders.stream()
@@ -51,19 +52,28 @@ public class OrderController {
 
 
     @PutMapping("/update/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<OrderResponseDto> updateOrder(@PathVariable Long id,
                                                           @RequestBody @Valid OrderRequestDto orderRequestDto) {
         Order order = orderService.findById(id).orElseThrow();
         Order updatedOrder = OrderMapper.INSTANCE.dtoToOrder(orderRequestDto);
         updatedOrder.setId(order.getId());
-        Order savedOrder = orderService.saveOrUpdate(updatedOrder);
+        Order savedOrder = orderService.update(updatedOrder);
         OrderResponseDto orderResponseDto = OrderMapper.INSTANCE.orderToDto(savedOrder);
         return ResponseEntity.ok(orderResponseDto);
     }
 
     @DeleteMapping("/delete/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Long> deleteOrder(@PathVariable Long id) {
         orderService.deleteById(id);
         return ResponseEntity.ok(id);
+    }
+
+    @GetMapping("/getPaymentAmountFromOrderID/{orderId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<PaymentAmount> getPaymentAmountFromOrderID(@PathVariable Long orderId){
+        PaymentAmount paymentAmount = new PaymentAmount(orderService.getPaymentAmountFromOrderID(orderId));
+        return ResponseEntity.ok(paymentAmount);
     }
 }
