@@ -9,6 +9,7 @@ import java.util.Optional;
 @Service
 public interface OfferService {
     Offer saveOrUpdate(Offer offer);
+    Offer update(Offer offer);
     Optional<Offer> findById(Long id);
     List<Offer> findAll();
     List<Offer> saveAll(List<Offer> offers);
