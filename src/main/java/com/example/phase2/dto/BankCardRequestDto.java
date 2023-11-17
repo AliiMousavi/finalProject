@@ -1,9 +1,6 @@
 package com.example.phase2.dto;
 
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,15 +13,19 @@ import org.springframework.format.annotation.NumberFormat;
 @AllArgsConstructor
 @NoArgsConstructor
 public class BankCardRequestDto {
+    @Positive
+    Long orderId;
     @NotBlank
     @Size(min = 16, max = 16, message = "secondPassword length must be 16.")
     String creditCardNumber;
     @NotBlank
-//    @NumberFormat
+    @NumberFormat
     @Size(min = 3, max = 4, message = "secondPassword length must be between 3 and 4 characters.")
     String cvv2;
-//    @NumberFormat
+    @NumberFormat
     @Size(min = 6, max = 12, message = "secondPassword length must be between 6 and 12 characters.")
     @NotBlank
     String secondPassword;
+    Integer captchaId;
+    String captcha;
 }
