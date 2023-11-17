@@ -4,19 +4,16 @@ package com.example.phase2.entity;
 import com.example.phase2.entity.enumeration.OrderStatus;
 import jakarta.persistence.*;
 import lombok.*;
-import lombok.experimental.SuperBuilder;
 
-import java.sql.Date;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@AllArgsConstructor
-@NoArgsConstructor
-@Data
 @Getter
 @Setter
+@AllArgsConstructor
+@NoArgsConstructor
 @Builder
 @Table(name = "orders")
 public class Order {
@@ -25,7 +22,7 @@ public class Order {
     private Long id;
     private int offerPrice;
     private String workToDo;
-    private LocalDateTime DateOfExecution;
+    private LocalDateTime dateOfExecution;
     private String address;
     private OrderStatus orderStatus;
     @ManyToOne
@@ -34,6 +31,8 @@ public class Order {
     private SubService subService;
     @OneToMany(mappedBy = "order", cascade = {CascadeType.PERSIST,CascadeType.MERGE})
     private List<Offer> offers= new ArrayList<>();
+    @OneToOne(mappedBy = "orderr", cascade = {CascadeType.PERSIST,CascadeType.MERGE})
+    private Offer acceptedOffer;
     @ManyToOne
     private Expert expert;
 
@@ -43,7 +42,7 @@ public class Order {
                 "id=" + id +
                 ", offerPrice=" + offerPrice +
                 ", workToDo='" + workToDo + '\'' +
-                ", DateOfExecution=" + DateOfExecution +
+                ", DateOfExecution=" + dateOfExecution +
                 ", address='" + address + '\'' +
                 ", orderStatus=" + orderStatus +
                 ", customer=" + customer.getFirstName() +
