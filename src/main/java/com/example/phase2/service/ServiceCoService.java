@@ -13,6 +13,7 @@ import java.util.Optional;
 @Service
 public interface ServiceCoService {
     ServiceCo saveOrUpdate(ServiceCo service);
+    ServiceCo update(ServiceCo service);
     Optional<ServiceCo> findById(Long id);
     List<ServiceCo> findAll();
     List<ServiceCo> saveAll(List<ServiceCo> serviceCos);
