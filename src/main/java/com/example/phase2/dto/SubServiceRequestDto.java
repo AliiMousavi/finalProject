@@ -19,4 +19,6 @@ public class SubServiceRequestDto {
     private int basePrice;
     @NotBlank
     private String caption;
+
+    private Long serviceCoId;
 }
