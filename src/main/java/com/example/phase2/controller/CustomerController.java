@@ -1,24 +1,25 @@
 package com.example.phase2.controller;
 
 import com.example.phase2.dto.*;
-import com.example.phase2.entity.Comment;
-import com.example.phase2.entity.Customer;
-import com.example.phase2.entity.Offer;
-import com.example.phase2.entity.Order;
-import com.example.phase2.exception.InsufficientCreditException;
-import com.example.phase2.exception.NotValidPasswordException;
+import com.example.phase2.entity.*;
+import com.example.phase2.entity.enumeration.OrderStatus;
+import com.example.phase2.exception.*;
 import com.example.phase2.mapper.CommentMapper;
 import com.example.phase2.mapper.CustomerMapper;
 import com.example.phase2.mapper.OfferMapper;
 import com.example.phase2.mapper.OrderMapper;
 import com.example.phase2.service.impl.CustomerServiceImpl;
+import com.example.phase2.service.impl.SubServiceServiceImpl;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
@@ -26,12 +27,15 @@ import java.util.stream.Collectors;
 public class CustomerController {
 
     private final CustomerServiceImpl customerService;
+    private final SubServiceServiceImpl subServiceService;
 
-    public CustomerController(CustomerServiceImpl customerService) {
+    public CustomerController(CustomerServiceImpl customerService, SubServiceServiceImpl subServiceService) {
         this.customerService = customerService;
+        this.subServiceService = subServiceService;
     }
 
     @PostMapping("/save")
+    @PreAuthorize("hasAnyRole('ADMIN','CUSTOMER')")
     public ResponseEntity<CustomerResponseDto> save(@RequestBody @Valid CustomerRequestDto customerRequestDto){
         Customer customer = CustomerMapper.INSTANCE.dtoToCustomer(customerRequestDto);
         Customer savedcustomer = customerService.saveOrUpdate(customer);
@@ -40,13 +44,15 @@ public class CustomerController {
     }
 
     @GetMapping("/find-by-id/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','CUSTOMER')")
     public ResponseEntity<CustomerResponseDto> findById(@PathVariable Long id){
         Customer customer = customerService.findById(id).orElseThrow();
         CustomerResponseDto customerResponseDto = CustomerMapper.INSTANCE.customerToDto(customer);
-        return new ResponseEntity<>(customerResponseDto, HttpStatus.CREATED);
+        return ResponseEntity.ok(customerResponseDto);
     }
 
     @GetMapping("/find-all")
+    @PreAuthorize("hasAnyRole('ADMIN','CUSTOMER')")
     public ResponseEntity<List<CustomerResponseDto>> findAll() {
         List<Customer> customers = customerService.findAll();
         List<CustomerResponseDto> responseDtos = customers.stream()
@@ -55,53 +61,62 @@ public class CustomerController {
         return ResponseEntity.ok(responseDtos);
     }
 
-    @PutMapping("/update/{id}")
-    public ResponseEntity<CustomerResponseDto> updateCustomer(@PathVariable Long id,
+    @PutMapping("/update")
+    @PreAuthorize("hasAnyRole('ADMIN','CUSTOMER')")
+    public ResponseEntity<CustomerResponseDto> updateCustomer(@AuthenticationPrincipal UserDetails userDetails,
                                                               @RequestBody @Valid CustomerRequestDto customerRequestDto) {
-        Optional<Customer> optionalCustomer = customerService.findById(id);
-        if (optionalCustomer.isPresent()) {
-            Customer existingCustomer = optionalCustomer.get();
-            Customer updatedCustomer = CustomerMapper.INSTANCE.dtoToCustomer(customerRequestDto);
-            updatedCustomer.setId(existingCustomer.getId());
-            Customer savedCustomer = customerService.saveOrUpdate(updatedCustomer);
-            CustomerResponseDto responseDto = CustomerMapper.INSTANCE.customerToDto(savedCustomer);
-            return ResponseEntity.ok(responseDto);
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+        Customer customer = customerService.findCustomerByEmail(userDetails.getUsername()).orElseThrow(
+                () -> new NotFoundException("Admin not found")
+        );
+        Customer updatedCustomer = CustomerMapper.INSTANCE.dtoToCustomer(customerRequestDto);
+        updatedCustomer.setId(customer.getId());
+        Customer savedCustomer = customerService.update(updatedCustomer);
+        CustomerResponseDto responseDto = CustomerMapper.INSTANCE.customerToDto(savedCustomer);
+        return ResponseEntity.ok(responseDto);
     }
 
     @DeleteMapping("/delete/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','CUSTOMER')")
     public ResponseEntity<Long> deleteCustomer(@PathVariable Long id) {
             customerService.deleteById(id);
             return ResponseEntity.ok(id);
     }
 
-    @PutMapping("/change-password/{id}/{password}")
-    public ResponseEntity<String> changePasswordById(@PathVariable Long id, @PathVariable String password) {
-        try {
-            Customer updatedCustomer = customerService.ChangePasswordByID(password, id);
+    @PutMapping("/change-password/{password}")
+    @PreAuthorize("hasRole('CUSTOMER')")
+    public ResponseEntity<String> changePasswordById(@PathVariable String password) {
+            Customer updatedCustomer = customerService.ChangePasswordByID(password);
             if (updatedCustomer != null) {
                 return ResponseEntity.ok("password has changed!");
             } else {
                 return ResponseEntity.notFound().build();
             }
-        } catch (NotValidPasswordException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
     }
     @PostMapping("/ordering/{customerId}")
+    @PreAuthorize("hasRole('CUSTOMER')")
     public ResponseEntity<OrderResponseDto> createOrder(@PathVariable Long customerId, @RequestBody @Valid OrderRequestDto orderRequestDto) {
         Customer customer = customerService.findById(customerId)
                 .orElseThrow(() -> new IllegalArgumentException("Customer not found"));
+        SubService subService = subServiceService.findById(orderRequestDto.getSubServiceId()).orElseThrow();
         Order order = OrderMapper.INSTANCE.dtoToOrder(orderRequestDto);
+        order.setSubService(subService);
+
+        if(order.getOfferPrice() < order.getSubService().getBasePrice()){
+            throw new NotValidOfferPriceException("OfferPrice should not be less than subservice BasePrice");
+        }
+        if(order.getDateOfExecution().isBefore(LocalDateTime.now())){
+            throw new NotValidDateOfExeException("DateOfExecution can not before now!");
+        }
+        customer.getOrders().add(order);
         order.setCustomer(customer);
+        order.setOrderStatus(OrderStatus.WAITING_FOR_THE_SUGGESTION_OF_EXPERTS);
         Order createdOrder = customerService.Ordering(order);
         OrderResponseDto orderResponseDto = OrderMapper.INSTANCE.orderToDto(createdOrder);
         return new ResponseEntity<>(orderResponseDto, HttpStatus.CREATED);
     }
 
     @GetMapping("/getOffersSortedByOfferedPrice/{customerId}/{orderId}")
+    @PreAuthorize("hasRole('CUSTOMER')")
     public ResponseEntity<List<OfferResponseDto>> getOffersSortedByOfferedPrice(@PathVariable Long customerId, @PathVariable Long orderId) {
         Customer customer = customerService.findById(customerId)
                 .orElseThrow(() -> new IllegalArgumentException("Customer not found"));
@@ -116,6 +131,7 @@ public class CustomerController {
     }
 
     @GetMapping("/getOffersSortedByExpertScore/{customerId}/{orderId}")
+    @PreAuthorize("hasRole('CUSTOMER')")
     public ResponseEntity<List<OfferResponseDto>> getOffersSortedByExpertScore(@PathVariable Long customerId, @PathVariable Long orderId)  {
         Customer customer = customerService.findById(customerId)
                 .orElseThrow(() -> new IllegalArgumentException("Customer not found"));
@@ -130,6 +146,7 @@ public class CustomerController {
     }
 
     @PostMapping("/selectOffer/{customerId}/{orderId}/{offerId}")
+    @PreAuthorize("hasRole('CUSTOMER')")
     public ResponseEntity<OfferResponseDto> selectOfferForOrder(@PathVariable Long customerId, @PathVariable Long orderId, @PathVariable Long offerId) {
         Customer customer = customerService.findById(customerId)
                 .orElseThrow(() -> new IllegalArgumentException("Customer not found"));
@@ -147,7 +164,8 @@ public class CustomerController {
     }
 
     @PutMapping("/changeOrderStatusToBeginning/{customerId}/{orderId}")
-    public ResponseEntity<Void> changeOrderStatusToBeginning(@PathVariable Long customerId, @PathVariable Long orderId) {
+    @PreAuthorize("hasRole('CUSTOMER')")
+    public ResponseEntity<String> changeOrderStatusToBeginning(@PathVariable Long customerId, @PathVariable Long orderId) {
         try {
             customerService.changeOrderStatusToBeginning(customerId, orderId);
             return ResponseEntity.ok().build();
@@ -157,6 +175,7 @@ public class CustomerController {
     }
 
     @PutMapping("/changeOrderStatusToDone/{customerId}/{orderId}")
+    @PreAuthorize("hasRole('CUSTOMER')")
     public ResponseEntity<Void> changeOrderStatusToDone(@PathVariable Long customerId, @PathVariable Long orderId) {
         try {
             customerService.changeOrderStatusToDone(customerId, orderId);
@@ -167,6 +186,7 @@ public class CustomerController {
     }
 
     @PutMapping("/changeOrderStatusToPAID/{customerId}/{orderId}")
+    @PreAuthorize("hasRole('CUSTOMER')")
     public ResponseEntity<Void> changeOrderStatusToPAID(@PathVariable Long customerId, @PathVariable Long orderId) {
         try {
             customerService.changeOrderStatusToPAID(customerId, orderId);
@@ -177,18 +197,14 @@ public class CustomerController {
     }
 
     @PutMapping("/paymentFromCredit/{customerId}/{orderId}")
+    @PreAuthorize("hasRole('CUSTOMER')")
     public ResponseEntity<Void> paymentFromCredit(@PathVariable Long customerId, @PathVariable Long orderId) {
-        try {
             customerService.paymentFromCredit(customerId, orderId);
             return ResponseEntity.ok().build();
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.notFound().build();
-        } catch (InsufficientCreditException e) {
-            return ResponseEntity.badRequest().build();
-        }
     }
 
     @PostMapping("/addComment/{customerId}/{orderId}")
+    @PreAuthorize("hasRole('CUSTOMER')")
     public ResponseEntity<CommentResponseDto> addComment(@PathVariable Long customerId, @PathVariable Long orderId, @RequestBody CommentRequestDto commentRequestDto) {
         Comment comment = CommentMapper.INSTANCE.dtoToComment(commentRequestDto);
         try {
@@ -202,7 +218,8 @@ public class CustomerController {
         }
     }
 
-    @PostMapping("/addComment/{customerId}/{orderId}")
+    @PostMapping("/addCommentJustScore/{customerId}/{orderId}")
+    @PreAuthorize("hasRole('CUSTOMER')")
     public ResponseEntity<CommentResponseDto> addCommentJustScore(@PathVariable Long customerId, @PathVariable Long orderId, @RequestBody CommentRequestDtoWithoutComment commentRequestDto) {
         Comment comment = CommentMapper.INSTANCE.justScoredtoToComment(commentRequestDto);
         try {
@@ -217,26 +234,31 @@ public class CustomerController {
     }
 
     @PostMapping("/paymentPage")
-    public void processPaymentPage(@RequestBody @Valid BankCardRequestDto bankCardRequestDto) {
-//        customerService.paymentByBankCard();
-//        System.out.println(bankCardRequestDto);
-//        System.out.println(bankCardRequestDto);
-//        System.out.println(bankCardRequestDto);
-//        System.out.println(bankCardRequestDto);
-//        System.out.println(bankCardRequestDto);
-//        System.out.println(bankCardRequestDto);
-//        System.out.println(bankCardRequestDto);
+    @PreAuthorize("hasRole('CUSTOMER')")
+    public ResponseEntity<?> processPaymentPage(@RequestBody @Valid BankCardRequestDto bankCardRequestDto) {
+        String captchaText = CaptchaController.captchaMap.remove(bankCardRequestDto.getCaptchaId());
+        if(!bankCardRequestDto.getCaptcha().equalsIgnoreCase(captchaText)){
+            throw new NotMachCaptchaException("captcha dose not mach!");
+        }
+        customerService.paymentByBankCard(bankCardRequestDto.getOrderId());
+        return ResponseEntity.ok("pardakht anjam shod!");
     }
 
-    @PostMapping("/oldPaymentPage")
-    public void processPaymentPageHtmlAfshar(@RequestBody @Valid BankCardRequestDto bankCardRequestDto) {
-        System.out.println(bankCardRequestDto);
-        System.out.println(bankCardRequestDto);
-        System.out.println(bankCardRequestDto);
-        System.out.println(bankCardRequestDto);
-        System.out.println(bankCardRequestDto);
-        System.out.println(bankCardRequestDto);
-        System.out.println(bankCardRequestDto);
+    @GetMapping("/activate")
+    @PreAuthorize("hasRole('CUSTOMER')")
+    public String activateAccount(@RequestParam("token") String activationToken){
+        return customerService.activateUserAccount(activationToken);
+    }
+    @GetMapping("/getOrdersByCustomerAndStatus/{orderStatus}")
+    @PreAuthorize("hasRole('CUSTOMER')")
+    public ResponseEntity<List<Order>> getOrdersByCustomerAndStatus(@PathVariable OrderStatus orderStatus){
+        List<Order> orders = customerService.getOrdersByCustomerAndStatus(orderStatus);
+        return ResponseEntity.ok(orders);
     }
 
+    @GetMapping("/getCredit")
+    @PreAuthorize("hasRole('CUSTOMER')")
+    public ResponseEntity<Double> getCredit(){
+        return ResponseEntity.ok(customerService.getCredit());
+    }
 }
