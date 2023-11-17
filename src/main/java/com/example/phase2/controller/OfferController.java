@@ -13,6 +13,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,6 +27,7 @@ public class OfferController {
     private final OfferServiceImpl offerService;
 
     @PostMapping("/save")
+    @PreAuthorize("hasAnyRole('ADMIN','EXPERT')")
     public ResponseEntity<OfferResponseDto> save(@RequestBody @Valid OfferRequestDto offerRequestDto){
         Offer offer = OfferMapper.INSTANCE.dtoToOffer(offerRequestDto);
         Offer savedOffer = offerService.saveOrUpdate(offer);
@@ -34,6 +36,7 @@ public class OfferController {
     }
 
     @GetMapping("/find-by-id/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<OfferResponseDto> findById(@PathVariable Long id){
         Offer offer = offerService.findById(id).orElseThrow();
         OfferResponseDto offerResponseDto = OfferMapper.INSTANCE.offerToDto(offer);
@@ -41,6 +44,7 @@ public class OfferController {
     }
 
     @GetMapping("/find-all")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<OfferResponseDto>> findAll() {
         List<Offer> offers = offerService.findAll();
         List<OfferResponseDto> offerResponseDtos = offers.stream()
@@ -50,23 +54,26 @@ public class OfferController {
     }
 
     @PutMapping("/update/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<OfferResponseDto> updateOffer(@PathVariable Long id,
                                                         @RequestBody @Valid OfferRequestDto offerRequestDto) {
         Offer offer = offerService.findById(id).orElseThrow();
         Offer updatedOffer = OfferMapper.INSTANCE.dtoToOffer(offerRequestDto);
         updatedOffer.setId(offer.getId());
-        Offer savedOffer = offerService.saveOrUpdate(updatedOffer);
+        Offer savedOffer = offerService.update(updatedOffer);
         OfferResponseDto offerResponseDto = OfferMapper.INSTANCE.offerToDto(savedOffer);
         return ResponseEntity.ok(offerResponseDto);
     }
 
     @DeleteMapping("/delete/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Long> deleteOffer(@PathVariable Long id) {
         offerService.deleteById(id);
         return ResponseEntity.ok(id);
     }
 
     @GetMapping("/sortOffersByExpertScore")
+    @PreAuthorize("hasAnyRole('ADMIN','CUSTOMER')")
     public ResponseEntity<List<OfferResponseDto>> sortOffersByExpertScore(@RequestBody List<OfferRequestDto> offerRequestDtos) {
 
         List<Offer> offers = offerRequestDtos.stream()
@@ -81,6 +88,7 @@ public class OfferController {
     }
 
     @GetMapping("/sortOffersByOfferedPrice")
+    @PreAuthorize("hasAnyRole('ADMIN','CUSTOMER')")
     public ResponseEntity<List<OfferResponseDto>> sortOffersByOfferedPrice(@RequestBody List<OfferRequestDto> offerRequestDtos) {
 
         List<Offer> offers = offerRequestDtos.stream()
