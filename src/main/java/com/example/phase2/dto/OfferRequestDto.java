@@ -1,5 +1,6 @@
 package com.example.phase2.dto;
 
+import com.example.phase2.entity.Order;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -15,10 +16,12 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class OfferRequestDto {
-    @NotBlank
+    @NotNull
     private int offeredPrice;
-    @NotBlank
+
     private LocalDateTime offeredDate;
     @NotNull
     private int Duration;
+    private Long orderId;
+    private Long expertId;
 }
