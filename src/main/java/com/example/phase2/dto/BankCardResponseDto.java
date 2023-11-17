@@ -16,8 +16,5 @@ import org.springframework.format.annotation.NumberFormat;
 @NoArgsConstructor
 public class BankCardResponseDto {
     @NotBlank
-//    @CreditCardNumber
-//    @Min(16)
-//    @Max(16)
     String creditCardNumber;
 }
