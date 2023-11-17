@@ -55,7 +55,7 @@ public class SubServiceController {
         SubService subService = subServiceService.findById(id).orElseThrow();
         SubService updatedSubService = SubServiceMapper.INSTANCE.dtoToSubService(subServiceRequestDto);
         updatedSubService.setId(subService.getId());
-        SubService savedSubService = subServiceService.saveOrUpdate(updatedSubService);
+        SubService savedSubService = subServiceService.update(updatedSubService);
         SubServiceResponseDto subServiceResponseDto = SubServiceMapper.INSTANCE.subServiceToDto(savedSubService);
         return ResponseEntity.ok(subServiceResponseDto);
     }
