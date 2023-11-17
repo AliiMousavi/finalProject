@@ -1,5 +1,6 @@
 package com.example.phase2.service;
 
+import com.example.phase2.entity.Admin;
 import com.example.phase2.entity.Expert;
 import com.example.phase2.entity.ServiceCo;
 import com.example.phase2.entity.SubService;
@@ -9,6 +10,7 @@ import java.util.Collection;
 
 @Service
 public interface AdminService{
+    Admin saveOrUpdate(Admin admin);
     ServiceCo addServiceCo(ServiceCo serviceCo);
     SubService addSubService(SubService subService);
     Collection<ServiceCo> getAllServiceCo();
