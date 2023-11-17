@@ -9,6 +9,7 @@ import java.util.Optional;
 @Service
 public interface SubServiceService{
     SubService saveOrUpdate(SubService subService);
+    SubService update(SubService subService);
     Optional<SubService> findById(Long id);
     List<SubService> findAll();
     List<SubService> saveAll(List<SubService> subServices);
