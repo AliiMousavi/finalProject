@@ -6,6 +6,7 @@ import com.example.phase2.service.OfferService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -23,8 +24,19 @@ public class OfferServiceImpl implements OfferService {
     @Transactional
     public Offer saveOrUpdate(Offer offer) {
         try {
+            offer.setDateOfOfferRegister(LocalDateTime.now());
             return offerRepository.save(offer);
         }catch (Exception e){
+            throw new RuntimeException(e.getMessage());
+        }
+    }
+
+    @Override
+    @Transactional
+    public Offer update(Offer offer) {
+        try{
+            return offerRepository.save(offer);
+        }catch (Exception e) {
             throw new RuntimeException(e.getMessage());
         }
     }
